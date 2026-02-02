@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f main_picture.png
+          test -f golf_left_to_right.png
+          test -f kovacs_ferenc.png
+          test -f kovacs_nora.png
+
+      - name: Basic HTML sanity check
+        run: |
+          set -euo pipefail
+          grep -q "<title>" index.html
+          grep -q "main_picture.png" index.html
