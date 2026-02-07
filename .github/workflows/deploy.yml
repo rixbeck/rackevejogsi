@@ -57,11 +57,12 @@ jobs:
           echo "Resolving DEPLOY_HOST..."
           getent hosts "${DEPLOY_HOST}" || true
 
-          rsync -az --delete \
+          rsync -az --delete --itemize-changes \
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude 'deploy/' \
             --chmod=Du=rwx,Dg=rx,Do=rx,Fu=rw,Fg=r,Fo=r \
+            --rsync-path "mkdir -p '${DEPLOY_PATH}' && rsync" \
             -e "ssh -p ${DEPLOY_PORT} -o StrictHostKeyChecking=yes" \
             ./ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
 
@@ -74,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -p "${DEPLOY_PORT}" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "set -e; echo HOSTNAME=\$(hostname); echo 'DEPLOY_PATH=${DEPLOY_PATH}'; ls -la '${DEPLOY_PATH}' | sed -n '1,80p'"
+            "set -e; echo HOSTNAME=\$(hostname); id; pwd; echo 'DEPLOY_PATH=${DEPLOY_PATH}'; ls -la '${DEPLOY_PATH}' | sed -n '1,120p'; echo '---'; find '${DEPLOY_PATH}' -maxdepth 2 -type f -name 'index.html' -o -name '*.png' | sed -n '1,120p'"
 
       - name: Verify Apache is reachable (optional)
         if: ${{ always() }}
