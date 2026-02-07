@@ -54,6 +54,9 @@ jobs:
           : "${DEPLOY_USER:?Missing DEPLOY_USER}"
           : "${DEPLOY_PATH:?Missing DEPLOY_PATH}"
 
+          echo "Resolving DEPLOY_HOST..."
+          getent hosts "${DEPLOY_HOST}" || true
+
           rsync -az --delete \
             --exclude '.git/' \
             --exclude '.github/' \
@@ -61,6 +64,17 @@ jobs:
             --chmod=Du=rwx,Dg=rx,Do=rx,Fu=rw,Fg=r,Fo=r \
             -e "ssh -p ${DEPLOY_PORT} -o StrictHostKeyChecking=yes" \
             ./ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+
+      - name: Verify remote deployment directory
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -p "${DEPLOY_PORT}" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "set -e; echo HOSTNAME=\$(hostname); echo 'DEPLOY_PATH=${DEPLOY_PATH}'; ls -la '${DEPLOY_PATH}' | sed -n '1,80p'"
 
       - name: Verify Apache is reachable (optional)
         if: ${{ always() }}
