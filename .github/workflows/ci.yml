@@ -18,13 +18,19 @@ jobs:
         run: |
           set -euo pipefail
           test -f index.html
-          test -f main_picture.png
-          test -f golf_left_to_right.png
-          test -f kovacs_ferenc.png
-          test -f kovacs_nora.png
+          test -f courses.html
+          test -f team.html
+          test -f contact.html
+          test -f assets/css/main.css
+          test -f assets/js/main.js
+          test -f assets/img/hero-bg-2.jpg
+          test -f assets/img/team/kovacs_ferenc.jpg
+          test -f assets/img/team/kovacs_nora.jpg
 
       - name: Basic HTML sanity check
         run: |
           set -euo pipefail
-          grep -q "<title>" index.html
-          grep -q "main_picture.png" index.html
+          for page in index.html courses.html team.html contact.html; do
+            grep -q "<title>" "$page"
+          done
+          grep -q "assets/img/hero-bg-2.jpg" index.html
